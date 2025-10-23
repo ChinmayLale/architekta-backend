@@ -1,0 +1,83 @@
+model Model {
+    id            String   @id @default(uuid())
+    name          String   @db.VarChar(100)
+    tableName     String   @db.VarChar(100)
+    description   String?  @db.Text
+    projectId     String
+    positionX     Int      @default(0)
+    positionY     Int      @default(0)
+    icon          String   @default("database") @db.VarChar(50)
+    color         String   @default("blue") @db.VarChar(20)
+    hasTimestamps Boolean  @default(true)
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+
+    project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    fields          ModelField[]
+    sourceRelations ModelRelation[] @relation("SourceModel")
+    targetRelations ModelRelation[] @relation("TargetModel")
+    controllers     Controller[]
+    services        Service[]
+
+    @@unique([projectId, name])
+    @@index([projectId])
+    @@map("models")
+}
+
+model ModelField {
+    id           String    @id @default(uuid())
+    modelId      String
+    name         String    @db.VarChar(100)
+    type         FieldType
+    isRequired   Boolean   @default(false)
+    isUnique     Boolean   @default(false)
+    defaultValue String?   @db.Text
+    enumValues   Json?     @db.JsonB
+    validation   Json?     @db.JsonB
+    order        Int       @default(0)
+    createdAt    DateTime  @default(now())
+
+    model Model @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+    @@unique([modelId, name])
+    @@index([modelId])
+    @@map("model_fields")
+}
+
+model ModelRelation {
+    id               String       @id @default(uuid())
+    sourceModelId    String
+    targetModelId    String
+    relationType     RelationType
+    relationName     String       @db.VarChar(100)
+    sourceForeignKey String?      @db.VarChar(100)
+    junctionTable    String?      @db.VarChar(100)
+    createdAt        DateTime     @default(now())
+
+    sourceModel Model @relation("SourceModel", fields: [sourceModelId], references: [id], onDelete: Cascade)
+    targetModel Model @relation("TargetModel", fields: [targetModelId], references: [id], onDelete: Cascade)
+
+    @@index([sourceModelId])
+    @@index([targetModelId])
+    @@map("model_relations")
+}
+
+enum RelationType {
+    ONE_TO_ONE
+    ONE_TO_MANY
+    MANY_TO_ONE
+    MANY_TO_MANY
+}
+
+enum FieldType {
+    STRING
+    TEXT
+    NUMBER
+    BOOLEAN
+    DATE
+    DATETIME
+    EMAIL
+    UUID
+    JSON
+    ENUM
+}

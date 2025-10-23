@@ -1,0 +1,26 @@
+model Route {
+    id           String     @id @default(uuid())
+    projectId    String
+    path         String     @db.VarChar(255)
+    method       HttpMethod
+    description  String?    @db.Text
+    authRequired Boolean    @default(false)
+    controllerId String     @unique
+    createdAt    DateTime   @default(now())
+    updatedAt    DateTime   @updatedAt
+
+    project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    controller Controller @relation(fields: [controllerId], references: [id], onDelete: Cascade)
+
+    @@unique([projectId, path, method])
+    @@index([projectId])
+    @@map("routes")
+}
+
+enum HttpMethod {
+    GET
+    POST
+    PUT
+    PATCH
+    DELETE
+}

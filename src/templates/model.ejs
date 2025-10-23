@@ -1,0 +1,31 @@
+model <%= model.name %> {
+  id String @id @default(uuid())
+
+<%_ model.fields.forEach(field => { _%>
+  <%= field.name %> <%= 
+    field.type === 'STRING' ? 'String' 
+    : field.type === 'TEXT' ? 'String'
+    : field.type === 'NUMBER' ? 'Int'
+    : field.type === 'BOOLEAN' ? 'Boolean'
+    : field.type === 'DATE' ? 'DateTime'
+    : field.type === 'DATETIME' ? 'DateTime'
+    : field.type === 'EMAIL' ? 'String'
+    : field.type === 'UUID' ? 'String'
+    : field.type === 'JSON' ? 'Json'
+    : 'String'
+  %><%= !field.isRequired ? '?' : '' %>
+<%_ }) _%>
+
+<%_ model.sourceRelations?.forEach(rel => { _%>
+  <%= rel.relationName %> <%= rel.targetModel.name %><%= 
+    rel.relationType === 'ONE_TO_MANY' ? '[]' : '' 
+  %>
+<%_ }) _%>
+
+<%_ if (model.hasTimestamps) { _%>
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+<%_ } _%>
+
+  @@map("<%= model.tableName %>")
+}

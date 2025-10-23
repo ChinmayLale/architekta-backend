@@ -1,0 +1,32 @@
+model Controller {
+    id            String        @id @default(uuid())
+    projectId     String
+    name          String        @db.VarChar(100)
+    filename      String        @db.VarChar(100)
+    modelId       String?
+    operationType OperationType
+    customLogic   String?       @db.Text
+    config        Json?         @db.JsonB
+    createdAt     DateTime      @default(now())
+    updatedAt     DateTime      @updatedAt
+
+    project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    model   Model?  @relation(fields: [modelId], references: [id], onDelete: SetNull)
+    route   Route?
+
+    @@index([projectId])
+    @@index([modelId])
+    @@map("controllers")
+}
+
+enum OperationType {
+    FIND_ALL
+    FIND_BY_ID
+    CREATE
+    UPDATE
+    DELETE
+    FIND_BY_FIELD
+    SEARCH
+    COUNT
+    CUSTOM
+}
