@@ -15,6 +15,9 @@ const loginUserService = async (email: string, provider: Provider, password?: st
     const user = await prisma.user.findUnique({
         where: {
             email: email
+        },
+        include: {
+            projects: true
         }
     });
 

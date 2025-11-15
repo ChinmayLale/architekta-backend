@@ -1,0 +1,73 @@
+import { Request, Response, NextFunction } from "express";
+import { ApiError } from "../utils/apiError";
+import { ApiResponse } from "../utils/apiResponse";
+import { <%= modelName %>Service } from "../services/<%= modelName %>.service";
+
+const <%= controllerName %> = {
+    <% if (operations.includes("FIND_ALL")) { %>
+    async getAll(req: Request, res: Response, next: NextFunction) {
+        try {
+            const data = await <%= modelName %>Service.getAll();
+            return res.status(200).send(new ApiResponse(200, "<%= modelName %> fetched successfully", data));
+        } catch (error) {
+            console.error("❌ Error in getAll:", error);
+            return next(new ApiError(500, "Failed to fetch <%= modelName %>"));
+        }
+    },
+    <% } %>
+
+    <% if (operations.includes("FIND_BY_ID")) { %>
+    async getById(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            if (!id) return next(new ApiError(400, "ID is required"));
+            const data = await <%= modelName %>Service.getById(id);
+            if (!data) return next(new ApiError(404, "<%= modelName %> not found"));
+            return res.status(200).send(new ApiResponse(200, "<%= modelName %> fetched successfully", data));
+        } catch (error) {
+            console.error("❌ Error in getById:", error);
+            return next(new ApiError(500, "Failed to fetch <%= modelName %>"));
+        }
+    },
+    <% } %>
+
+    <% if (operations.includes("CREATE")) { %>
+    async create(req: Request, res: Response, next: NextFunction) {
+        try {
+            const result = await <%= modelName %>Service.create(req.body);
+            return res.status(201).send(new ApiResponse(201, "<%= modelName %> created successfully", result));
+        } catch (error) {
+            console.error("❌ Error in create:", error);
+            return next(new ApiError(500, "Failed to create <%= modelName %>"));
+        }
+    },
+    <% } %>
+
+    <% if (operations.includes("UPDATE")) { %>
+    async update(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const result = await <%= modelName %>Service.update(id, req.body);
+            return res.status(200).send(new ApiResponse(200, "<%= modelName %> updated successfully", result));
+        } catch (error) {
+            console.error("❌ Error in update:", error);
+            return next(new ApiError(500, "Failed to update <%= modelName %>"));
+        }
+    },
+    <% } %>
+
+    <% if (operations.includes("DELETE")) { %>
+    async delete(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const result = await <%= modelName %>Service.delete(id);
+            return res.status(200).send(new ApiResponse(200, "<%= modelName %> deleted successfully", result));
+        } catch (error) {
+            console.error("❌ Error in delete:", error);
+            return next(new ApiError(500, "Failed to delete <%= modelName %>"));
+        }
+    },
+    <% } %>
+};
+
+export default <%= controllerName %>;

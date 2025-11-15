@@ -1,0 +1,59 @@
+import { prisma } from "../config/db.config";
+import { ApiError } from "../utils/apiError";
+
+
+export const <%= modelName %>Service = {
+    async getAll() {
+        try {
+            return await prisma.<%= lowerModelName %>.findMany();
+        } catch (error) {
+            console.error("❌ Error in getAll:", error);
+            throw new ApiError(500, "Failed to fetch <%= modelName %>");
+        }
+    },
+
+    async getById(id: string) {
+        try {
+            return await prisma.<%= lowerModelName %>.findUnique({
+                where: { id },
+            });
+        } catch (error) {
+            console.error("❌ Error in getById:", error);
+            throw new ApiError(500, "Failed to fetch <%= modelName %>");
+        }
+    },
+
+    async create(data: any) {
+        try {
+            return await prisma.<%= lowerModelName %>.create({
+                data,
+            });
+        } catch (error) {
+            console.error("❌ Error in create:", error);
+            throw new ApiError(500, "Failed to create <%= modelName %>");
+        }
+    },
+
+    async update(id: string, data: any) {
+        try {
+            return await prisma.<%= lowerModelName %>.update({
+                where: { id },
+                data,
+            });
+        } catch (error) {
+            console.error("❌ Error in update:", error);
+            throw new ApiError(500, "Failed to update <%= modelName %>");
+        }
+    },
+
+    async delete(id: string) {
+        try {
+            return await prisma.<%= lowerModelName %>.delete({
+                where: { id },
+            });
+        } catch (error) {
+            console.error("❌ Error in delete:", error);
+            throw new ApiError(500, "Failed to delete <%= modelName %>");
+        }
+    },
+};

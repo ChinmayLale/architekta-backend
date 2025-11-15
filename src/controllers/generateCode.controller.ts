@@ -6,6 +6,11 @@ import { Controller, Model, ModelField, Project, Route, Service } from "@prisma/
 import { ProjectService } from "../services/Project.service";
 import { generatePackageJsonCodeService } from "../services/code/packageJsonCode.service";
 import { confidCodeService } from "../services/code/configCode.service";
+import { generateControllerCodeService } from "../services/code/controllerCode.service";
+import { generateServiceCodeService } from "../services/code/serviceCode.service";
+import { generateRouterCodeService } from "../services/code/routeCode.service";
+import { generateAppFileService } from "../services/code/generateAppFileCode.service";
+import { generateIndexFileCodeService } from "../services/code/generateIndexFile.service";
 
 
 type ProjectWithRelations = Project & {
@@ -43,6 +48,10 @@ export const generateCodeController = async (req: Request, res: Response, next: 
         // Generate Package.json
         const packageJsonFile = generatePackageJsonCodeService(project, userID);
 
+        //Generate Middleware Config in src/config/middleware.config.ts
+
+        const middlewareConfigCode = await confidCodeService.generateMiddlewareConfigService(userID);
+
         // Generate code for each model
         const code = await generateModelCodeService(models, userID);
 
@@ -50,13 +59,34 @@ export const generateCodeController = async (req: Request, res: Response, next: 
         const dbConfigCode = await confidCodeService.generateDBConfigService(userID);
 
 
+        // Generate COntroller COde for each model
+        const controllerCode = await generateControllerCodeService(models, userID);
+
+
+        // Generate Services code 
+        const serviceCode = await generateServiceCodeService(models, userID);
+
+        // Generate Routes code
+        const routeCode = await generateRouterCodeService(routes, controllers, userID);
+
+
         //get Utils Folder
         const utilsFolders = await confidCodeService.copyUtilsFolder(userID);
+
+
+        //generate AppFile code 
+        const appFileCode = await generateAppFileService(userID);
+
+        // Generate Index File Code
+        const indexFileCode = await generateIndexFileCodeService(userID)
 
         if (!code) {
             return res.status(500).send(new ApiError(500, "Failed to generate code", "Something went wrong while generating model code"));
         }
 
+        setTimeout(async () => {
+            console.log("started File Deletion");
+        }, 20000)
         return res.status(200).send(new ApiResponse(200, "Code generated successfully", [],));
     } catch (error) {
         console.log("❌ Error in generateModelCodeController:", error);

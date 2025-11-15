@@ -1,0 +1,15 @@
+import { Router } from "express";
+import  <%= controllerName %>  from "../controllers/<%= controllerFileName %>s.controller";
+import { authenticate } from "../middleware/auth.middleware";
+
+const router = Router();
+
+<% routes.forEach(route => { %>
+<% if (route.authRequired) { %>
+router.<%= route.method.toLowerCase() %>("<%= route.path %>", authenticate, <%= controllerName %>.<%= route.handlerName %>);
+<% } else { %>
+router.<%= route.method.toLowerCase() %>("<%= route.path %>", <%= controllerName %>.<%= route.handlerName %>);
+<% } %>
+<% }) %>
+
+export default router;

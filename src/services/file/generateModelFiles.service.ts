@@ -33,7 +33,7 @@ export const generateModelCodeFileService = async (
     // Write the file
     await fs.promises.writeFile(filePath, code, "utf8");
 
-    console.log(`✅ File written successfully at: ${filePath}`);
+    // console.log(`✅ File written successfully at: ${filePath}`);
     return filePath;
   } catch (error) {
     console.error("❌ Error writing generated file:", error);

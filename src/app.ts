@@ -7,6 +7,8 @@ import { authRouter } from './routes/auth.route';
 import { ModelRouter } from './routes/model.route';
 import { projectRouter } from './routes/project.route';
 import CodeRouter from './routes/code.route';
+import { ControllerRoute } from './routes/controller.route';
+import { userRouter } from './routes/user.route';
 
 
 const app = express();
@@ -39,6 +41,9 @@ app.get('/ping', (req, res) => {
 app.use("/api/v1/auth", authRouter);
 
 
+// User Router 
+app.use("/api/v1/user", userRouter  );
+
 
 
 
@@ -46,6 +51,9 @@ app.use("/api/v1/auth", authRouter);
 
 app.use("/api/v1/models", ModelRouter);
 
+
+// Create Controller Router
+app.use("/api/v1/api", ControllerRoute);
 
 
 
