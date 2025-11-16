@@ -7,8 +7,7 @@ import { Request, Response, NextFunction } from "express";
 
 const getUserProfileController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const userId = req.params["userId"] as string;
-
+        const userId = req.user?.userId
         if (!userId) {
             return next(new ApiError(400, "User ID is required"));
         }

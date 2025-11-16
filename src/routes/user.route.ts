@@ -6,7 +6,7 @@ import { userController } from "../controllers/user.controller";
 const router = Router();
 
 //  Get User Profile
-router.get("/profile/:userId", authenticate, userController.getUserProfileController);
+router.get("/profile", authenticate, userController.getUserProfileController);
 
 
 
