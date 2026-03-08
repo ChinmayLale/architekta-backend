@@ -1,0 +1,25 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "src/index.ts",
+            "use": "@vercel/node",
+            "config": {
+                "includeFiles": [
+                    "prisma/schema.prisma",
+                    "prisma/migrations/**",
+                    "node_modules/.prisma/client/**"
+                ]
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "src/index.ts"
+        }
+    ],
+    "env": {
+        "NODE_ENV": "production"
+    }
+}

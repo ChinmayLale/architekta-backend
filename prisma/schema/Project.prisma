@@ -14,12 +14,13 @@ model Project {
   controllers Controller[]
   services    Service[]
 
+  // Activity String[]
+
   @@index([userId])
   @@index([status])
   @@index([slug])
   @@map("projects")
 }
-
 
 enum ProjectStatus {
   DRAFT

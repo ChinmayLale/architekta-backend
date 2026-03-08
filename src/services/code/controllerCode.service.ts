@@ -38,8 +38,8 @@ export const generateControllerCodeService = async (
             const renderedCode = await ejs.renderFile(
                 templatePath,
                 {
-                    controllerName: "PostController",
-                    modelName: "Post",
+                    controllerName: controllerName,
+                    modelName: cleanModelName,
                     operations: ["CREATE", "FIND_ALL"]
                 },
                 { async: true }

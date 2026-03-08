@@ -13,13 +13,22 @@
     "postinstall": "prisma generate"
   },
   "nodemonConfig": {
-    "ignore":["projects/*.json", "projects/**/*.js","projects/**/*.json","projects/**/*.ts","dist/*","node_modules/*"]
+    "ignore": [
+      "projects/*.json",
+      "projects/**/*.js",
+      "projects/**/*.json",
+      "projects/**/*.ts",
+      "dist/*",
+      "node_modules/*"
+    ]
   },
   "author": "Chinmay Lale",
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "^6.17.1",
     "@prisma/extension-accelerate": "^2.0.2",
+    "archiver": "^7.0.1",
+    "autocannon": "^8.0.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -28,9 +37,11 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
+    "prom-client": "^15.1.3",
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@types/archiver": "^7.0.0",
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",

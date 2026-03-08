@@ -1,4 +1,7 @@
 import { NextFunction, Request, Response } from "express";
+import path from "path";
+import fs from "fs";
+import archiver from "archiver";
 import { generateModelCodeService } from "../services/code/modelCode.service";
 import { ApiError } from "../utils/apiError";
 import { ApiResponse } from "../utils/apiResponse";
@@ -12,7 +15,6 @@ import { generateRouterCodeService } from "../services/code/routeCode.service";
 import { generateAppFileService } from "../services/code/generateAppFileCode.service";
 import { generateIndexFileCodeService } from "../services/code/generateIndexFile.service";
 
-
 type ProjectWithRelations = Project & {
     models: (Model & {
         fields: ModelField[];
@@ -22,74 +24,97 @@ type ProjectWithRelations = Project & {
     services: Service[];
 };
 
-
 export const generateCodeController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-
-        // let  status = false;
         const userID = req.user.userId as string;
-
-        const { projectId } = req.body
+        const { projectId } = req.body;
 
         if (!projectId) {
             return res.status(400).send(new ApiError(400, "Project ID is required"));
         }
 
-        // Fetch project with models and fields
+        // Fetch project
         const project = await ProjectService.getProjectByIdService(projectId, userID);
-        // console.log({ project })
+        
         if (!project) {
             return res.status(404).send(new ApiError(404, "Project not found"));
         }
-        const { name, models, routes, controllers, services, slug, status, description } = project
 
+        const { name, models, routes, controllers, services, slug } = project;
 
-
-        // Generate Package.json
-        const packageJsonFile = generatePackageJsonCodeService(project, userID);
-
-        //Generate Middleware Config in src/config/middleware.config.ts
-
-        const middlewareConfigCode = await confidCodeService.generateMiddlewareConfigService(userID);
-
-        // Generate code for each model
+        // ========================================
+        // 📝 GENERATE ALL CODE FILES
+        // ========================================
+        
+        await generatePackageJsonCodeService(project, userID);
+        await confidCodeService.generateMiddlewareConfigService(userID);
         const code = await generateModelCodeService(models, userID);
-
-        // Generate DB Cofig in src/config/db.config.ts
-        const dbConfigCode = await confidCodeService.generateDBConfigService(userID);
-
-
-        // Generate COntroller COde for each model
-        const controllerCode = await generateControllerCodeService(models, userID);
-
-
-        // Generate Services code 
-        const serviceCode = await generateServiceCodeService(models, userID);
-
-        // Generate Routes code
-        const routeCode = await generateRouterCodeService(routes, controllers, userID);
-
-
-        //get Utils Folder
-        const utilsFolders = await confidCodeService.copyUtilsFolder(userID);
-
-
-        //generate AppFile code 
-        const appFileCode = await generateAppFileService(userID);
-
-        // Generate Index File Code
-        const indexFileCode = await generateIndexFileCodeService(userID)
+        await confidCodeService.generateDBConfigService(userID);
+        await generateControllerCodeService(models, userID);
+        await generateServiceCodeService(models, userID);
+        await generateRouterCodeService(routes, controllers, userID);
+        await confidCodeService.copyUtilsFolder(userID);
+        await generateAppFileService(userID);
+        await generateIndexFileCodeService(userID);
 
         if (!code) {
-            return res.status(500).send(new ApiError(500, "Failed to generate code", "Something went wrong while generating model code"));
+            return res.status(500).send(
+                new ApiError(500, "Failed to generate code", "Something went wrong")
+            );
         }
 
-        setTimeout(async () => {
-            console.log("started File Deletion");
-        }, 20000)
-        return res.status(200).send(new ApiResponse(200, "Code generated successfully", [],));
+        console.log("✅ All code files generated successfully");
+
+        // ========================================
+        // 📦 STREAM ZIP DIRECTLY TO CLIENT
+        // ========================================
+        
+        const projectFolder = path.join("projects", `Project_${userID}`);
+        const zipFileName = `${slug || 'backend-project'}_${Date.now()}.zip`;
+
+        // Set response headers for download
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="${zipFileName}"`);
+
+        // Create archive and stream directly to response
+        const archive = archiver('zip', {
+            zlib: { level: 9 } // Maximum compression
+        });
+
+        // Handle errors
+        archive.on('error', (err) => {
+            console.error("❌ ZIP streaming error:", err);
+            throw err;
+        });
+
+        // Pipe archive to response
+        archive.pipe(res);
+
+        // Add project folder to archive
+        archive.directory(projectFolder, false);
+
+        // Finalize archive
+        await archive.finalize();
+
+        console.log(`✅ ZIP streamed to client: ${zipFileName}`);
+
+        // ========================================
+        // 🗑️ CLEANUP: Delete project folder after streaming
+        // ========================================
+        
+        archive.on('end', () => {
+            setTimeout(async () => {
+                try {
+                    await fs.promises.rm(projectFolder, { recursive: true, force: true });
+                    console.log(`🗑️ Deleted project folder: ${projectFolder}`);
+                } catch (error) {
+                    console.error("❌ Error deleting folder:", error);
+                }
+            }, 5000); // Delete after 5 seconds
+        });
+
     } catch (error) {
-        console.log("❌ Error in generateModelCodeController:", error);
+        console.log("❌ Error in generateCodeController:", error);
         return next(error);
     }
 };
